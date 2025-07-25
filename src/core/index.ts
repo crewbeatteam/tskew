@@ -1,3 +1,3 @@
-export { Api } from './api';
-export { SearchResult } from './search-result';
-export * from './types';
+export { Api } from "./api";
+export { SearchResult } from "./search-result";
+export * from "./types";

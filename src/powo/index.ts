@@ -1,7 +1,7 @@
-import { Api, SearchResult, QueryParam, FilterParam } from '../core';
-import { PowoTaxon } from './types';
+import { Api, SearchResult, QueryParam, FilterParam } from "../core";
+import { PowoTaxon } from "./types";
 
-const POWO_URL = 'https://powo.science.kew.org/api/1';
+const POWO_URL = "https://powo.science.kew.org/api/1";
 
 const api = new Api(POWO_URL);
 
@@ -18,11 +18,11 @@ export async function lookup(
 ): Promise<PowoTaxon> {
   const params: QueryParam = {};
   if (include.length > 0) {
-    params.fields = include.join(',');
+    params.fields = include.join(",");
   }
-  
+
   return api.get<PowoTaxon>(`taxon/${id}`, params);
 }
 
-export * from './types';
-export * from './terms';
+export * from "./types";
+export * from "./terms";

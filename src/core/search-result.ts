@@ -102,6 +102,10 @@ export class SearchResult<T = any> implements Iterable<T> {
         }
 
         if (response.cursor) {
+          // Prevent infinite loops by checking if cursor is stuck
+          if (response.cursor === this.cursor) {
+            break;
+          }
           this.cursor = response.cursor;
         } else {
           break;
