@@ -1,5 +1,9 @@
 # tskew
 
+[![npm version](https://badge.fury.io/js/tskew.svg)](https://badge.fury.io/js/tskew)
+[![npm downloads](https://img.shields.io/npm/dm/tskew.svg)](https://www.npmjs.com/package/tskew)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
+
 TypeScript interface to Kew Gardens botanical data services.
 
 A complete TypeScript port of the Python [pykew](https://github.com/RBGKew/pykew) library, providing easy access to:
@@ -14,20 +18,31 @@ A complete TypeScript port of the Python [pykew](https://github.com/RBGKew/pykew
 npm install tskew
 ```
 
+**🎉 Now available on npm:** https://www.npmjs.com/package/tskew
+
 ## Quick Start
 
 ```typescript
-import { ipni } from 'tskew';
+import { ipni, powo } from 'tskew';
 
-// Simple search
+// Simple string search
 const results = ipni.search('Poa annua');
+const plants = await results.take(5);
+console.log(plants); // Real botanical data!
 
-// Get all results
-const plants = await results.all();
-console.log(plants);
+// Advanced search with terms
+const oakTrees = powo.search({ 
+  [powo.Name.genus]: 'Quercus' 
+}, powo.Filters.accepted);
+
+for await (const oak of oakTrees) {
+  console.log(`${oak.name} - ${oak.family}`);
+}
 ```
 
-**See `example.js` for a comprehensive working example with real API results.**
+**✨ Try it now:** `npm install tskew` and run the code above!
+
+**📋 See `example.js` for a comprehensive working demonstration with live API results.**
 
 ## Usage
 
@@ -218,6 +233,17 @@ const kplTaxon = await kpl.lookup('123456');
 - `first()` - Get first result  
 - `size()` - Get total count
 - `take(n)` - Get first n results
+
+## Links
+
+- **📦 npm package**: https://www.npmjs.com/package/tskew
+- **🐙 GitHub repository**: https://github.com/crewbeatteam/tskew
+- **🐍 Original Python library**: https://github.com/RBGKew/pykew
+- **🌱 Kew Gardens**: https://www.kew.org/
+
+## Contributing
+
+Issues and pull requests are welcome! See the [GitHub repository](https://github.com/crewbeatteam/tskew) for more information.
 
 ## License
 
