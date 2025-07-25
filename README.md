@@ -27,6 +27,8 @@ const plants = await results.all();
 console.log(plants);
 ```
 
+**See `example.js` for a comprehensive working example with real API results.**
+
 ## Usage
 
 ### String Queries

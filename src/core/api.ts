@@ -26,7 +26,11 @@ export class Api {
   }
 
   private buildUrl(endpoint: string, params: QueryParam = {}): string {
-    const url = new URL(endpoint, this.baseUrl);
+    // Ensure baseUrl ends with / and endpoint starts with /
+    const baseUrlNormalized = this.baseUrl.endsWith('/') ? this.baseUrl : this.baseUrl + '/';
+    const endpointNormalized = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+    
+    const url = new URL(endpointNormalized, baseUrlNormalized);
     
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {

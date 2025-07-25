@@ -1,7 +1,7 @@
 import { Api, SearchResult } from '../core';
 import { KplTaxon } from './types';
 
-const KPL_URL = 'http://kewplantlist.org/api/v1';
+const KPL_URL = 'https://wcvp.science.kew.org/api/v1';
 
 const api = new Api(KPL_URL);
 

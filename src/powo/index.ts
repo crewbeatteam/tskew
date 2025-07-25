@@ -1,7 +1,7 @@
 import { Api, SearchResult, QueryParam, FilterParam } from '../core';
 import { PowoTaxon } from './types';
 
-const POWO_URL = 'http://www.plantsoftheworldonline.org/api/2';
+const POWO_URL = 'https://powo.science.kew.org/api/1';
 
 const api = new Api(POWO_URL);
 

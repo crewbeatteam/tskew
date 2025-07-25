@@ -25,14 +25,19 @@ export class SearchResult<T = any> implements Iterable<T> {
       return this.query;
     }
     
-    // Convert dict query to key.value:term format
+    // Convert dict query to key:value format for modern APIs
     const terms: string[] = [];
     for (const [key, value] of Object.entries(this.query)) {
       if (value !== undefined && value !== null) {
-        terms.push(`${key}:"${value}"`);
+        // For genus/species queries, use key:value format
+        if (key === 'genus' || key === 'species' || key === 'family') {
+          terms.push(`${key}:${value}`);
+        } else {
+          terms.push(`${key}:"${value}"`);
+        }
       }
     }
-    return terms.join(' AND ');
+    return terms.join(' ');
   }
 
   private formatFilters(): string {
