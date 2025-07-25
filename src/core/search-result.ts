@@ -1,5 +1,5 @@
-import { Api } from './api';
-import { QueryParam, FilterParam } from './types';
+import { Api } from "./api";
+import { QueryParam, FilterParam } from "./types";
 
 export class SearchResult<T = any> implements Iterable<T> {
   private api: Api;
@@ -7,8 +7,8 @@ export class SearchResult<T = any> implements Iterable<T> {
   private filters: FilterParam | FilterParam[] | null;
   private results: T[] | null = null;
   private resultIndex = 0;
-  private cursor = '*';
-  private perPage = 500;
+  private cursor = "*";
+  private perPage = 5;
 
   constructor(
     api: Api,
@@ -21,38 +21,38 @@ export class SearchResult<T = any> implements Iterable<T> {
   }
 
   private formatQuery(): string {
-    if (typeof this.query === 'string') {
+    if (typeof this.query === "string") {
       return this.query;
     }
-    
+
     // Convert dict query to key:value format for modern APIs
     const terms: string[] = [];
     for (const [key, value] of Object.entries(this.query)) {
       if (value !== undefined && value !== null) {
         // For genus/species queries, use key:value format
-        if (key === 'genus' || key === 'species' || key === 'family') {
+        if (key === "genus" || key === "species" || key === "family") {
           terms.push(`${key}:${value}`);
         } else {
           terms.push(`${key}:"${value}"`);
         }
       }
     }
-    return terms.join(' ');
+    return terms.join(" ");
   }
 
   private formatFilters(): string {
-    if (!this.filters) return '';
-    
+    if (!this.filters) return "";
+
     if (Array.isArray(this.filters)) {
-      return this.filters.map(f => String(f)).join(',');
+      return this.filters.map((f) => String(f)).join(",");
     }
-    
+
     return String(this.filters);
   }
 
   private buildParams(): QueryParam {
     const params: QueryParam = {
-      perPage: this.perPage
+      perPage: this.perPage,
     };
 
     const queryStr = this.formatQuery();
@@ -65,7 +65,7 @@ export class SearchResult<T = any> implements Iterable<T> {
       params.f = filtersStr;
     }
 
-    if (this.cursor && this.cursor !== '*') {
+    if (this.cursor && this.cursor !== "*") {
       params.cursor = this.cursor;
     }
 
@@ -76,16 +76,16 @@ export class SearchResult<T = any> implements Iterable<T> {
     if (this.results !== null) return;
 
     this.results = [];
-    this.cursor = '*';
+    this.cursor = "*";
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
       const params = this.buildParams();
-      const response = await this.api.get<any>('search', params);
-      
+      const response = await this.api.get<any>("search", params);
+
       if (response.results && Array.isArray(response.results)) {
         this.results.push(...response.results);
-        
+
         if (response.cursor) {
           this.cursor = response.cursor;
         } else {
@@ -99,7 +99,7 @@ export class SearchResult<T = any> implements Iterable<T> {
 
   *[Symbol.iterator](): Iterator<T> {
     if (this.results === null) {
-      throw new Error('Must call runQuery() first or use async methods');
+      throw new Error("Must call runQuery() first or use async methods");
     }
 
     for (const result of this.results) {
@@ -109,7 +109,7 @@ export class SearchResult<T = any> implements Iterable<T> {
 
   async *[Symbol.asyncIterator](): AsyncIterableIterator<T> {
     await this.runQuery();
-    
+
     for (const result of this.results!) {
       yield result;
     }
