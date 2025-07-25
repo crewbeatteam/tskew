@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { QueryParam, FilterParam, RequestConfig } from './types';
+import { QueryParam, RequestConfig } from './types';
 
 export class Api {
   private client: AxiosInstance;

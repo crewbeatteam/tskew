@@ -73,6 +73,7 @@ export class SearchResult<T = any> implements Iterable<T> {
     this.results = [];
     this.cursor = '*';
 
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       const params = this.buildParams();
       const response = await this.api.get<any>('search', params);

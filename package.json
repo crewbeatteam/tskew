@@ -19,11 +19,11 @@
     "plants",
     "botanical-data"
   ],
-  "author": "Alex",
+  "author": "Alex Naymushin",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/tskew.git"
+    "url": "https://github.com/crewbeatteam/tskew.git"
   },
   "files": [
     "dist/**/*"

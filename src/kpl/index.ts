@@ -1,4 +1,4 @@
-import { Api, SearchResult, QueryParam } from '../core';
+import { Api, SearchResult } from '../core';
 import { KplTaxon } from './types';
 
 const KPL_URL = 'http://kewplantlist.org/api/v1';
@@ -9,7 +9,7 @@ export function search(query?: string): SearchResult<KplTaxon> {
   return new SearchResult<KplTaxon>(api, query || '', null);
 }
 
-export async function lookup(id: string, include?: string[]): Promise<KplTaxon> {
+export async function lookup(id: string): Promise<KplTaxon> {
   return api.get<KplTaxon>(`taxon/${id}`);
 }
 

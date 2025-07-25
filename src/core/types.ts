@@ -2,9 +2,7 @@ export interface QueryParam {
   [key: string]: string | number | boolean | undefined;
 }
 
-export interface FilterParam {
-  [key: string]: string | number | boolean | undefined;
-}
+export type FilterParam = string | { [key: string]: string | number | boolean | undefined };
 
 export interface SearchOptions {
   perPage?: number;

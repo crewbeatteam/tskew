@@ -14,13 +14,25 @@ A complete TypeScript port of the Python [pykew](https://github.com/RBGKew/pykew
 npm install tskew
 ```
 
+## Quick Start
+
+```typescript
+import { ipni } from 'tskew';
+
+// Simple search
+const results = ipni.search('Poa annua');
+
+// Get all results
+const plants = await results.all();
+console.log(plants);
+```
+
 ## Usage
 
 ### String Queries
 
 ```typescript
-import * as ipni from 'tskew/ipni';
-import * as powo from 'tskew/powo';
+import { ipni, powo } from 'tskew';
 
 // Simple string search
 const results = ipni.search('Poa annua');
@@ -35,8 +47,9 @@ for await (const name of results) {
 ### Advanced Dictionary Queries
 
 ```typescript
-import * as ipni from 'tskew/ipni';
-import { Name, Filters } from 'tskew/ipni';
+import { ipni } from 'tskew';
+// Terms are exported from the ipni module
+const { Name, Filters } = ipni;
 
 const query = { 
   [Name.genus]: 'Poa', 
@@ -59,8 +72,9 @@ const count = await results.size();
 ### POWO Search
 
 ```typescript
-import * as powo from 'tskew/powo';
-import { Name, Geography, Filters } from 'tskew/powo';
+import { powo } from 'tskew';
+// Terms are exported from the powo module
+const { Name, Geography, Filters } = powo;
 
 const query = { 
   [Name.genus]: 'Poa', 
@@ -77,7 +91,7 @@ for await (const taxon of results) {
 ### KPL Search
 
 ```typescript
-import * as kpl from 'tskew/kpl';
+import { kpl } from 'tskew';
 
 // Search all
 const allResults = kpl.search();
@@ -93,6 +107,8 @@ for await (const taxon of results) {
 ### Lookup Operations
 
 ```typescript
+import { ipni, powo, kpl } from 'tskew';
+
 // IPNI lookups
 const name = await ipni.lookupName('320035-2');
 const author = await ipni.lookupAuthor('12653-1');
