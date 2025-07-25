@@ -1,0 +1,131 @@
+import { Api } from './api';
+import { QueryParam, FilterParam } from './types';
+
+export class SearchResult<T = any> implements Iterable<T> {
+  private api: Api;
+  private query: string | QueryParam;
+  private filters: FilterParam | FilterParam[] | null;
+  private results: T[] | null = null;
+  private resultIndex = 0;
+  private cursor = '*';
+  private perPage = 500;
+
+  constructor(
+    api: Api,
+    query: string | QueryParam = {},
+    filters: FilterParam | FilterParam[] | null = null
+  ) {
+    this.api = api;
+    this.query = query;
+    this.filters = filters;
+  }
+
+  private formatQuery(): string {
+    if (typeof this.query === 'string') {
+      return this.query;
+    }
+    
+    // Convert dict query to key.value:term format
+    const terms: string[] = [];
+    for (const [key, value] of Object.entries(this.query)) {
+      if (value !== undefined && value !== null) {
+        terms.push(`${key}:"${value}"`);
+      }
+    }
+    return terms.join(' AND ');
+  }
+
+  private formatFilters(): string {
+    if (!this.filters) return '';
+    
+    if (Array.isArray(this.filters)) {
+      return this.filters.map(f => String(f)).join(',');
+    }
+    
+    return String(this.filters);
+  }
+
+  private buildParams(): QueryParam {
+    const params: QueryParam = {
+      perPage: this.perPage
+    };
+
+    const queryStr = this.formatQuery();
+    if (queryStr) {
+      params.q = queryStr;
+    }
+
+    const filtersStr = this.formatFilters();
+    if (filtersStr) {
+      params.f = filtersStr;
+    }
+
+    if (this.cursor && this.cursor !== '*') {
+      params.cursor = this.cursor;
+    }
+
+    return params;
+  }
+
+  private async runQuery(): Promise<void> {
+    if (this.results !== null) return;
+
+    this.results = [];
+    this.cursor = '*';
+
+    while (true) {
+      const params = this.buildParams();
+      const response = await this.api.get<any>('search', params);
+      
+      if (response.results && Array.isArray(response.results)) {
+        this.results.push(...response.results);
+        
+        if (response.cursor) {
+          this.cursor = response.cursor;
+        } else {
+          break;
+        }
+      } else {
+        break;
+      }
+    }
+  }
+
+  *[Symbol.iterator](): Iterator<T> {
+    if (this.results === null) {
+      throw new Error('Must call runQuery() first or use async methods');
+    }
+
+    for (const result of this.results) {
+      yield result;
+    }
+  }
+
+  async *[Symbol.asyncIterator](): AsyncIterableIterator<T> {
+    await this.runQuery();
+    
+    for (const result of this.results!) {
+      yield result;
+    }
+  }
+
+  async all(): Promise<T[]> {
+    await this.runQuery();
+    return [...this.results!];
+  }
+
+  async first(): Promise<T | undefined> {
+    await this.runQuery();
+    return this.results![0];
+  }
+
+  async size(): Promise<number> {
+    await this.runQuery();
+    return this.results!.length;
+  }
+
+  async take(n: number): Promise<T[]> {
+    await this.runQuery();
+    return this.results!.slice(0, n);
+  }
+}
