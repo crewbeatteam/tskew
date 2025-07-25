@@ -41,6 +41,12 @@ export class Api {
     try {
       const response = await fetch(url, {
         method: "GET",
+        headers: {
+          "User-Agent": "python-requests/2.31.0",
+          Accept: "*/*",
+          "Accept-Encoding": "gzip, deflate",
+          Connection: "keep-alive",
+        },
         signal: controller.signal,
       });
 
