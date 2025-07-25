@@ -88,6 +88,11 @@ export class SearchResult<T = any> implements Iterable<T> {
       const response = await this.api.get<any>("search", params);
 
       if (response.results && Array.isArray(response.results)) {
+        // Stop if no results returned
+        if (response.results.length === 0) {
+          break;
+        }
+
         this.results.push(...response.results);
 
         // Stop if we have enough results
