@@ -8,16 +8,19 @@ export class SearchResult<T = any> implements Iterable<T> {
   private results: T[] | null = null;
   private resultIndex = 0;
   private cursor = "*";
-  private perPage = 5;
+  private perPage = 10;
+  private defaultLimit?: number = 10;
 
   constructor(
     api: Api,
     query: string | QueryParam = {},
-    filters: FilterParam | FilterParam[] | null = null
+    filters: FilterParam | FilterParam[] | null = null,
+    defaultLimit?: number
   ) {
     this.api = api;
     this.query = query;
     this.filters = filters;
+    this.defaultLimit = defaultLimit;
   }
 
   private formatQuery(): string {
@@ -72,11 +75,12 @@ export class SearchResult<T = any> implements Iterable<T> {
     return params;
   }
 
-  private async runQuery(): Promise<void> {
+  private async runQuery(limit?: number): Promise<void> {
     if (this.results !== null) return;
 
     this.results = [];
     this.cursor = "*";
+    const effectiveLimit = limit || this.defaultLimit;
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
@@ -85,6 +89,12 @@ export class SearchResult<T = any> implements Iterable<T> {
 
       if (response.results && Array.isArray(response.results)) {
         this.results.push(...response.results);
+
+        // Stop if we have enough results
+        if (effectiveLimit && this.results.length >= effectiveLimit) {
+          this.results = this.results.slice(0, effectiveLimit);
+          break;
+        }
 
         if (response.cursor) {
           this.cursor = response.cursor;
@@ -121,7 +131,7 @@ export class SearchResult<T = any> implements Iterable<T> {
   }
 
   async first(): Promise<T | undefined> {
-    await this.runQuery();
+    await this.runQuery(1);
     return this.results![0];
   }
 
@@ -131,7 +141,7 @@ export class SearchResult<T = any> implements Iterable<T> {
   }
 
   async take(n: number): Promise<T[]> {
-    await this.runQuery();
+    await this.runQuery(n);
     return this.results!.slice(0, n);
   }
 }

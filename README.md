@@ -229,10 +229,29 @@ const kplTaxon = await kpl.lookup('123456');
 ### SearchResult Methods
 
 - `[Symbol.asyncIterator]()` - Async iteration support
-- `all()` - Get all results as array
-- `first()` - Get first result  
+- `all()` - Get all results as array (respects default limit)
+- `first()` - Get first result (efficient single-item fetch)
 - `size()` - Get total count
-- `take(n)` - Get first n results
+- `take(n)` - Get first n results (efficient limited fetch)
+
+### Result Limiting
+
+By default, SearchResult limits results to 10 items to improve performance. You can customize this:
+
+```typescript
+import { ipni } from 'tskew';
+
+// Use default limit (10 items)  
+const results = ipni.search('Poa');
+const plants = await results.all(); // Returns max 10 items
+
+// Set custom default limit
+const limitedResults = new SearchResult(ipni.api, 'Poa', null, 50);
+const moreResults = await limitedResults.all(); // Returns max 50 items
+
+// Get specific number efficiently
+const fiveResults = await results.take(5); // Only fetches 5 items from API
+```
 
 ## Links
 
