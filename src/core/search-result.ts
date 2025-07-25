@@ -81,9 +81,19 @@ export class SearchResult<T = any> implements Iterable<T> {
     this.results = [];
     this.cursor = "*";
     const effectiveLimit = limit || this.defaultLimit;
+    let requestCount = 0;
+    const maxRequests = 50; // Safety limit for Cloudflare/CDN issues
+    const seenCursors = new Set<string>();
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
+      requestCount++;
+      
+      // Safety break for too many requests (Cloudflare/CDN issues)
+      if (requestCount > maxRequests) {
+        break;
+      }
+
       const params = this.buildParams();
       const response = await this.api.get<any>("search", params);
 
@@ -91,6 +101,14 @@ export class SearchResult<T = any> implements Iterable<T> {
         // Stop if no results returned
         if (response.results.length === 0) {
           break;
+        }
+
+        // Check for cursor issues before adding results
+        if (response.cursor) {
+          // Multiple protections against infinite loops (CDN/Cloudflare issues)
+          if (response.cursor === this.cursor || seenCursors.has(response.cursor)) {
+            break;
+          }
         }
 
         this.results.push(...response.results);
@@ -102,10 +120,7 @@ export class SearchResult<T = any> implements Iterable<T> {
         }
 
         if (response.cursor) {
-          // Prevent infinite loops by checking if cursor is stuck
-          if (response.cursor === this.cursor) {
-            break;
-          }
+          seenCursors.add(this.cursor);
           this.cursor = response.cursor;
         } else {
           break;

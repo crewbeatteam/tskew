@@ -63,7 +63,7 @@ describe("SearchResult", () => {
 
     // Should make 2 requests: initial + one retry before detecting stuck cursor
     expect(mockApi.get).toHaveBeenCalledTimes(2);
-    expect(results).toHaveLength(2); // Gets results from both calls before stopping
+    expect(results).toHaveLength(1); // Protection stops before adding results from stuck cursor
   });
 
   test("should handle empty results gracefully", async () => {
@@ -102,6 +102,56 @@ describe("SearchResult", () => {
     const results = await searchResult.all();
 
     expect(mockApi.get).toHaveBeenCalledTimes(2);
-    expect(results).toHaveLength(2); // Gets results from both calls before detecting stuck cursor
+    expect(results).toHaveLength(1); // Protection stops before adding results from stuck cursor
+  });
+
+  test("should prevent infinite loops with Cloudflare/CDN cursor cycling", async () => {
+    let callCount = 0;
+    mockApi.get = jest.fn().mockImplementation(() => {
+      callCount++;
+      // Simulate CDN returning cursors in a cycle: cursor1 -> cursor2 -> cursor1
+      if (callCount === 1) {
+        return Promise.resolve({
+          results: [{ name: "Item1" }],
+          cursor: "cursor1",
+        });
+      } else if (callCount === 2) {
+        return Promise.resolve({
+          results: [{ name: "Item2" }],
+          cursor: "cursor2",
+        });
+      } else {
+        // Return previously seen cursor - should trigger protection
+        return Promise.resolve({
+          results: [{ name: "Item3" }],
+          cursor: "cursor1", // Previously seen cursor
+        });
+      }
+    });
+
+    const searchResult = new SearchResult(mockApi, "test");
+    const results = await searchResult.all();
+
+    expect(mockApi.get).toHaveBeenCalledTimes(3);
+    expect(results).toHaveLength(2); // Only gets first 2 results before detecting cycle
+  });
+
+  test("should limit requests to prevent runaway loops", async () => {
+    // Mock API that always returns new cursors (simulating broken CDN)
+    let callCount = 0;
+    mockApi.get = jest.fn().mockImplementation(() => {
+      callCount++;
+      return Promise.resolve({
+        results: [{ name: `Item${callCount}` }],
+        cursor: `cursor${callCount}`, // Always new cursor
+      });
+    });
+
+    const searchResult = new SearchResult(mockApi, "test");
+    const results = await searchResult.all();
+
+    // Should stop at 50 requests max
+    expect(mockApi.get).toHaveBeenCalledTimes(50);
+    expect(results).toHaveLength(50);
   });
 });
